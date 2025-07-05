@@ -54,16 +54,6 @@ A browser-based tool to hide and extract secret messages in images using the Lea
 
 ---
 
-## 🌐 Live Demo (Optional)
-
-You can host this project using GitHub Pages:
-
-1. Go to your GitHub repo → Settings → Pages
-2. Under "Source", choose `main` branch and root (`/`)
-3. Click Save — GitHub will give you a public URL like:  
-   `https://your-username.github.io/image-steganography-tool`
-
----
 
 ## 📌 Use Cases
 
@@ -83,7 +73,6 @@ This project is licensed under the [MIT License](LICENSE).
 ## 👨‍💻 Author
 
 📫 **Subhanshu Sinha**
-
 
 ---
 
