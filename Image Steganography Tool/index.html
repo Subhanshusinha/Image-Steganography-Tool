@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Steganography Tool | Resume Project</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <header class="bg-white shadow-sm">
+        <div class="max-w-4xl mx-auto p-4">
+            <h1 class="text-3xl font-bold text-blue-600">Image Steganography Tool</h1>
+            <p class="text-gray-600">Hide and extract secret messages in images</p>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-4xl mx-auto p-4 w-full">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="border-b border-gray-200">
+                <nav class="flex -mb-px">
+                    <button id="encode-tab" class="py-4 px-6 text-center border-b-2 font-medium text-sm tab-active">
+                        Hide Message
+                    </button>
+                    <button id="decode-tab" class="py-4 px-6 text-center border-b-2 font-medium text-sm text-gray-500 hover:text-blue-600">
+                        Extract Message
+                    </button>
+                    <button id="about-tab" class="py-4 px-6 text-center border-b-2 font-medium text-sm text-gray-500 hover:text-blue-600">
+                        About
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Encode Section -->
+            <div id="encode-section" class="p-6">
+                <div class="md:flex gap-6">
+                    <div class="md:w-1/2 mb-6 md:mb-0">
+                        <div id="encode-dropzone" class="dropzone rounded-lg p-8 text-center cursor-pointer">
+                            <div class="flex flex-col items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-600">Click to upload an image or drag and drop</p>
+                                <p class="text-xs text-gray-500 mt-1">PNG or JPG (max. 800x800px)</p>
+                            </div>
+                        </div>
+                        <div id="encode-image-container" class="hidden mt-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="font-medium">Selected Image</h3>
+                                <button id="encode-remove-btn" class="text-red-500 text-sm hover:text-red-700">Remove</button>
+                            </div>
+                            <canvas id="encode-canvas" class="border border-gray-200 rounded"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="md:w-1/2">
+                        <div class="mb-4">
+                            <label for="secret-message" class="block text-sm font-medium text-gray-700 mb-1">Secret Message</label>
+                            <textarea id="secret-message" class="message-box w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Type your secret message here..."></textarea>
+                            <div class="flex items-center mt-1">
+                                <div id="secret-indicator" class="secret-indicator flex items-center text-xs text-blue-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    <span>Your message is securely encoded in image pixels</span>
+                                </div>
+                                <span id="message-counter" class="ml-auto text-xs text-gray-500">0/1000 characters</span>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password (optional)</label>
+                            <input type="password" id="password" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Add a password for extra security">
+                        </div>
+                        <button id="encode-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Hide Message
+                        </button>
+
+                        <div id="encode-result" class="hidden mt-4">
+                            <h3 class="font-medium mb-2">Image with Hidden Message</h3>
+                            <div class="border border-gray-200 rounded p-2">
+                                <canvas id="encode-result-canvas"></canvas>
+                            </div>
+                            <div class="mt-3 flex">
+                                <button id="download-encode-result" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                    Download Image
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decode Section -->
+            <div id="decode-section" class="hidden p-6">
+                <div class="md:flex gap-6">
+                    <div class="md:w-1/2 mb-6 md:mb-0">
+                        <div id="decode-dropzone" class="dropzone rounded-lg p-8 text-center cursor-pointer">
+                            <div class="flex flex-col items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-600">Click to upload an image with hidden message</p>
+                                <p class="text-xs text-gray-500 mt-1">PNG or JPG</p>
+                            </div>
+                        </div>
+                        <div id="decode-image-container" class="hidden mt-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="font-medium">Uploaded Image</h3>
+                                <button id="decode-remove-btn" class="text-red-500 text-sm hover:text-red-700">Remove</button>
+                            </div>
+                            <canvas id="decode-canvas" class="border border-gray-200 rounded"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="md:w-1/2">
+                        <div class="mb-4">
+                            <label for="decode-password" class="block text-sm font-medium text-gray-700 mb-1">Password (if set)</label>
+                            <input type="password" id="decode-password" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Enter password if the message is protected">
+                        </div>
+                        <button id="decode-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Extract Message
+                        </button>
+
+                        <div id="decode-result" class="hidden mt-4">
+                            <h3 class="font-medium mb-2">Extracted Message</h3>
+                            <div class="p-4 bg-gray-50 rounded border border-gray-200">
+                                <div id="extracted-message" class="whitespace-pre-wrap text-gray-800"></div>
+                            </div>
+                            <div class="mt-3 flex justify-end">
+                                <button id="copy-message" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                                    Copy to Clipboard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Section -->
+            <div id="about-section" class="hidden p-6">
+                <div class="prose max-w-none">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">About Steganography</h2>
+                    <p class="text-gray-700">
+                        Steganography is the practice of concealing a message within another medium (such as an image) in such a way that no one apart from the intended recipient even knows that a hidden message exists.
+                    </p>
+                    
+                    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">How This Tool Works</h3>
+                    <p class="text-gray-700">
+                        This tool uses the Least Significant Bit (LSB) method to hide information in image files. Each pixel in the image is represented by three values (red, green, blue) and a fourth value (alpha/transparency) in PNG images.
+                    </p>
+                    <p class="text-gray-700 mt-3">
+                        The LSB method works by replacing the least significant bits of the pixel values with the bits of the message we want to hide. Since we're only changing the least significant bits, the change in color is minimal and usually imperceptible to the human eye.
+                    </p>
+                    
+                    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Key Features</h3>
+                    <ul class="list-disc pl-5 text-gray-700 space-y-2">
+                        <li>Hide text messages within PNG or JPG images</li>
+                        <li>Optional password protection for encrypted messages</li>
+                        <li>Extract hidden messages from images</li>
+                        <li>Responsive design works on desktop and mobile</li>
+                        <li>No server-side processing - everything happens in your browser</li>
+                    </ul>
+                    
+                    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Technical Details</h3>
+                    <p class="text-gray-700">
+                        This application is built entirely with HTML, CSS, and JavaScript. It uses the HTML5 Canvas API to process images and the Web Crypto API for optional password-based encryption.
+                    </p>
+                    <p class="text-gray-700 mt-3">
+                        The implementation prioritizes privacy - all processing happens locally in your browser, and no data is ever sent to any server.
+                    </p>
+                    
+                    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Resume Project Notes</h3>
+                    <p class="text-gray-700">
+                        This project demonstrates several key skills for your resume:
+                    </p>
+                    <ul class="list-disc pl-5 text-gray-700 space-y-2">
+                        <li>Modern frontend development with HTML5, CSS3, and JavaScript</li>
+                        <li>Image manipulation using the Canvas API</li>
+                        <li>Implementation of steganography algorithms</li>
+                        <li>Optional encryption using Web Crypto API</li>
+                        <li>Responsive UI design and user experience</li>
+                        <li>Client-side processing and privacy considerations</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 mt-8">
+        <div class="max-w-4xl mx-auto p-4 text-center text-sm text-gray-600">
+            <p>Steganography Tool - A resume project demonstrating frontend and cryptographic capabilities</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+
+</body>
+</html>
+
