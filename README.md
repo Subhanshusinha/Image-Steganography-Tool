@@ -2,7 +2,7 @@
 
 A browser-based tool to hide and extract secret messages in images using the Least Significant Bit (LSB) technique. Built using HTML, CSS, and JavaScript with optional password-based encryption.
 
-![Preview](https://user-images.githubusercontent.com/your-username/demo-image.png) <!-- Optional: Add your own screenshot later -->
+![image](https://github.com/user-attachments/assets/5a578f2e-3753-4217-bde3-2d106c35bfbe)
 
 ---
 
