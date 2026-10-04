@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════
-// StealthGuard — ui.js
+// StealthGuard — app.js
 // ══════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Shared state ──────────────────────────────────
     let encodeImageData = null;
     let encodeMaxBytes  = 0;
-    let encodeFileData  = null;  
+    let encodeFileData  = null;
     let decodeImageData = null;
     let diffOrigData    = null;
     let diffEncData     = null;
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const el = document.getElementById(s + '-section');
             if (el) el.classList.add('hidden');
         });
-        
+
         document.querySelectorAll('.sidebar-nav-btn').forEach(btn => {
             if (btn.dataset.section === name) {
                 btn.classList.add('active');
@@ -35,13 +35,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (target) {
             target.classList.remove('hidden');
             target.classList.add('fade-in-up');
+            // Scroll to top on section switch (important on mobile)
+            target.scrollIntoView ? window.scrollTo(0, 0) : null;
             setTimeout(() => target.classList.remove('fade-in-up'), 700);
         }
 
         if (name === 'dashboard') refreshStats();
     }
 
-    // Sidebar nav clicks
+    // Sidebar nav clicks (desktop + mobile bottom nav)
     document.querySelectorAll('.sidebar-nav-btn').forEach(btn => {
         btn.addEventListener('click', () => showSection(btn.dataset.section));
     });
@@ -59,8 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const dec   = parseInt(localStorage.getItem('steg_dec')   || '0');
         const bytes = parseInt(localStorage.getItem('steg_bytes') || '0');
 
-        const elEnc = document.getElementById('stat-encryptions');
-        const elDec = document.getElementById('stat-decryptions');
+        const elEnc   = document.getElementById('stat-encryptions');
+        const elDec   = document.getElementById('stat-decryptions');
         const elBytes = document.getElementById('stat-bytes');
 
         if (elEnc) elEnc.textContent = enc;
@@ -69,8 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let bStr = bytes + ' B';
         if (bytes > 1048576) bStr = (bytes / 1048576).toFixed(2) + ' MB';
         else if (bytes > 1024) bStr = (bytes / 1024).toFixed(2) + ' KB';
-        
-        if (elBytes) elBytes.textContent = bStr;
+
+        if (elBytes) elBytes.textContent = bStr + ' Processed';
     }
     refreshStats();
 
@@ -85,47 +87,45 @@ document.addEventListener('DOMContentLoaded', () => {
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const isOk = status === 'success';
 
-        const opColors = {
-            'Hide Data':    { bg: 'bg-slate-100',    text: 'text-slate-800'   },
-            'Extract Data': { bg: 'bg-slate-100',    text: 'text-slate-800'   },
-            'Diff Analysis':{ bg: 'bg-slate-100',    text: 'text-slate-800'   },
-        };
-        const c = opColors[op] || { bg: 'bg-slate-100', text: 'text-slate-800' };
-
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50 transition-colors fade-in-up';
+        tr.className = 'hover:bg-slate-50/80 transition-colors fade-in-up';
         tr.innerHTML = `
-            <td class="px-5 py-4 font-medium">
-                <span class="inline-block px-2.5 py-1 rounded-md text-[11px] ${c.bg} ${c.text}">${op}</span>
+            <td class="px-4 py-3 font-medium">
+                <span class="inline-block px-2.5 py-1 rounded-md text-[11px] bg-slate-100 text-slate-700 font-bold">${op}</span>
             </td>
-            <td class="px-5 py-4 text-slate-600 font-mono text-xs truncate max-w-[150px]" title="${payload}">${payload}</td>
-            <td class="px-5 py-4 text-slate-400 text-xs">${time}</td>
-            <td class="px-5 py-4 text-right">
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border ${isOk ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100'}">
-                    ${isOk ? 'Success' : 'Failed'}
+            <td class="px-4 py-3 text-slate-500 font-mono text-xs truncate max-w-[120px]" title="${payload}">${payload}</td>
+            <td class="px-4 py-3 text-slate-400 text-xs hidden sm:table-cell">${time}</td>
+            <td class="px-4 py-3 text-right">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${isOk ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">
+                    ${isOk ? '✓ OK' : '✕ Failed'}
                 </span>
             </td>`;
         tbody.insertBefore(tr, tbody.firstChild);
-
-        while (tbody.children.length > 5) tbody.removeChild(tbody.lastChild);
+        while (tbody.children.length > 6) tbody.removeChild(tbody.lastChild);
     }
 
-    // ── Generic dropzone setup ────────────────────────
+    // ── Generic dropzone setup (PNG only for steganography) ──
     function makeDropzone(zone, onFile) {
         if (!zone) return;
         zone.addEventListener('click', () => {
             const inp = document.createElement('input');
             inp.type   = 'file';
-            inp.accept = 'image/png,image/jpeg';
+            inp.accept = 'image/png'; // PNG only — JPEG is lossy and destroys hidden data
             inp.onchange = e => { if (e.target.files[0]) onFile(e.target.files[0]); };
             inp.click();
         });
-        zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
-        zone.addEventListener('dragleave', e => { e.preventDefault(); zone.classList.remove('drag-over'); });
-        zone.addEventListener('drop',      e => {
-            e.preventDefault(); zone.classList.remove('drag-over');
+        zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('border-indigo-400', 'bg-indigo-50/50'); });
+        zone.addEventListener('dragleave', e => { e.preventDefault(); zone.classList.remove('border-indigo-400', 'bg-indigo-50/50'); });
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            zone.classList.remove('border-indigo-400', 'bg-indigo-50/50');
             const file = e.dataTransfer.files[0];
-            if (file && (file.type.startsWith('image/'))) onFile(file);
+            if (!file) return;
+            if (file.type !== 'image/png') {
+                alert('Please use PNG images only. JPEG compression destroys hidden data.');
+                return;
+            }
+            onFile(file);
         });
     }
 
@@ -155,18 +155,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const txt = document.getElementById('secret-message')?.value || '';
             payloadSize = new TextEncoder().encode(txt).length;
         }
-        const overhead  = 50 + 44; 
+        const overhead  = 11 + 44; // header + AES overhead estimate
         const totalUsed = payloadSize + overhead;
         const pct       = Math.min(100, (totalUsed / encodeMaxBytes) * 100);
         const bar       = document.getElementById('capacity-bar');
         const label     = document.getElementById('capacity-label');
         if (bar) {
-            bar.style.width    = pct + '%';
-            bar.className      = `h-full rounded-full transition-all duration-300 ${pct > 90 ? 'bg-rose-500' : pct > 65 ? 'bg-amber-500' : 'bg-gradient-to-r from-indigo-500 to-purple-500'}`;
+            bar.style.width = pct + '%';
+            bar.className   = `h-full rounded-full transition-all duration-300 ${pct > 90 ? 'bg-rose-500' : pct > 65 ? 'bg-amber-500' : 'bg-gradient-to-r from-indigo-500 to-purple-500'}`;
         }
         if (label) {
-            label.textContent  = `${totalUsed.toLocaleString()} / ${encodeMaxBytes.toLocaleString()} Bytes`;
-            label.className    = `text-xs font-bold ${pct > 90 ? 'text-rose-600' : 'text-indigo-600'}`;
+            label.textContent = `${totalUsed.toLocaleString()} / ${encodeMaxBytes.toLocaleString()} B`;
+            label.className   = `text-xs font-bold ${pct > 90 ? 'text-rose-600' : 'text-indigo-600'}`;
         }
     }
 
@@ -178,16 +178,18 @@ document.addEventListener('DOMContentLoaded', () => {
     makeDropzone(encodeDropzone, file => {
         loadImageToCanvas(file, encodeCanvas, data => {
             encodeImageData = data;
-            encodeMaxBytes  = Math.floor(data.data.length / 8) - 50;
+            encodeMaxBytes  = Math.floor(data.data.length / 8) - 11;
             encodeDropzone.classList.add('hidden');
             encodePreview.classList.remove('hidden');
+            encodePreview.classList.add('flex');
             updateCapacity();
         });
     });
 
     document.getElementById('encode-remove-btn')?.addEventListener('click', () => {
-        encodeImageData = null; encodeMaxBytes = 0;
+        encodeImageData = null; encodeMaxBytes = 0; encodeFileData = null;
         encodePreview.classList.add('hidden');
+        encodePreview.classList.remove('flex');
         encodeDropzone.classList.remove('hidden');
         document.getElementById('encode-result')?.classList.add('hidden');
         updateCapacity();
@@ -200,7 +202,6 @@ document.addEventListener('DOMContentLoaded', () => {
         isFileMode = mode === 'file';
         document.getElementById('text-payload-container').classList.toggle('hidden',  isFileMode);
         document.getElementById('file-payload-container').classList.toggle('hidden', !isFileMode);
-        
         if (typeTextBtn && typeFileBtn) {
             typeTextBtn.className = `px-4 py-1.5 text-xs font-bold rounded-md transition-all ${!isFileMode ? 'bg-white shadow-sm text-indigo-700' : 'text-slate-500 hover:text-slate-800'}`;
             typeFileBtn.className = `px-4 py-1.5 text-xs font-bold rounded-md transition-all ${ isFileMode ? 'bg-white shadow-sm text-indigo-700' : 'text-slate-500 hover:text-slate-800'}`;
@@ -244,8 +245,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const password = document.getElementById('encode-password').value || null;
         const btn = document.getElementById('encode-btn');
-        btn.disabled    = true;
-        btn.textContent = 'Processing...';
+        btn.disabled = true;
+        btn.innerHTML = `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg> Processing...`;
 
         try {
             const resultData = await stego.encode(encodeImageData, payloadBytes, metadata, password);
@@ -261,8 +262,8 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Error: ' + err.message);
             logActivity('Hide Data', 'failed', 'error');
         } finally {
-            btn.disabled    = false;
-            btn.textContent = 'Process & Hide Data';
+            btn.disabled = false;
+            btn.innerHTML = `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Encrypt & Embed`;
         }
     });
 
@@ -403,9 +404,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Real-Time Clock ───────────────────────────────
     function updateClock() {
-        const clockEl = document.getElementById('real-time-clock');
-        if (clockEl) {
-            clockEl.textContent = new Date().toLocaleTimeString();
+        const el = document.getElementById('clock-time');
+        if (el) {
+            const now = new Date();
+            el.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
     }
     setInterval(updateClock, 1000);

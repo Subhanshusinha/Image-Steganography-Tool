@@ -1,11 +1,7 @@
 /* ─── Variables ─── */
-:root {
-    --primary: #4f46e5;
-}
+:root { --primary: #4f46e5; }
 
-body {
-    font-family: 'Inter', sans-serif;
-}
+body { font-family: 'Inter', sans-serif; }
 
 /* ─── Keyframe Animations ─── */
 @keyframes fadeInUp {
@@ -15,9 +11,9 @@ body {
 .fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
 @keyframes blob {
-    0% { transform: translate(0px, 0px) scale(1); }
-    33% { transform: translate(30px, -50px) scale(1.1); }
-    66% { transform: translate(-20px, 20px) scale(0.9); }
+    0%   { transform: translate(0px, 0px) scale(1); }
+    33%  { transform: translate(30px, -50px) scale(1.1); }
+    66%  { transform: translate(-20px, 20px) scale(0.9); }
     100% { transform: translate(0px, 0px) scale(1); }
 }
 .animate-blob { animation: blob 15s infinite alternate ease-in-out; }
@@ -26,18 +22,17 @@ body {
 
 /* ─── Glass & Cards ─── */
 .glass-panel {
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255,255,255,0.65);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
 }
-
 .glass-card {
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(255,255,255,0.75);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 1);
+    border: 1px solid rgba(255,255,255,1);
     border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03), inset 0 2px 0 rgba(255,255,255,0.5);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -48,25 +43,21 @@ body {
     border-radius: 12px;
     font-weight: 800;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 8px 16px -4px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 8px 16px -4px rgba(99,102,241,0.3);
 }
 .primary-btn:hover:not(:disabled) {
     transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 12px 20px -4px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 12px 20px -4px rgba(99,102,241,0.4);
 }
-.primary-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
+.primary-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .secondary-btn {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255,255,255,0.9);
     color: #475569;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     font-weight: 700;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 .secondary-btn:hover {
     background: white;
@@ -80,28 +71,44 @@ body {
 .nav-link {
     color: #64748b;
     font-weight: 600;
-    font-size: 0.85rem;
-    padding: 0.5rem 1.25rem;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.9rem;
     border-radius: 99px;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
+    white-space: nowrap;
 }
-.nav-link:hover {
-    color: #1e293b;
-    background: rgba(255,255,255, 0.5);
-}
+.nav-link:hover { color: #1e293b; background: rgba(255,255,255,0.5); }
 .nav-link.active {
     color: var(--primary);
     background: white;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.07);
 }
 
-/* ─── Utilities ─── */
-input, textarea {
-    outline: none;
-    transition: all 0.3s ease;
+/* ─── Mobile Bottom Nav ─── */
+.mobile-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 700;
+    flex: 1;
 }
+.mobile-nav-btn svg { width: 20px; height: 20px; }
+.mobile-nav-btn.active { color: var(--primary); background: rgba(99,102,241,0.08); }
+.mobile-nav-btn:hover { color: var(--primary); }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─── Inputs ─── */
+input, textarea { outline: none; transition: all 0.3s ease; }
