@@ -18,9 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const ALL_SECTIONS = ['dashboard', 'encode', 'decode', 'analysis', 'security', 'guide'];
 
     function showSection(name) {
+        // Hide all sections cleanly using style instead of class to avoid hidden+flex conflict
         ALL_SECTIONS.forEach(s => {
             const el = document.getElementById(s + '-section');
-            if (el) el.classList.add('hidden');
+            if (el) el.style.display = 'none';
         });
 
         document.querySelectorAll('.sidebar-nav-btn').forEach(btn => {
@@ -33,10 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const target = document.getElementById(name + '-section');
         if (target) {
-            target.classList.remove('hidden');
+            target.style.display = 'flex';
             target.classList.add('fade-in-up');
-            // Scroll to top on section switch (important on mobile)
-            target.scrollIntoView ? window.scrollTo(0, 0) : null;
+            window.scrollTo({ top: 0, behavior: 'instant' });
             setTimeout(() => target.classList.remove('fade-in-up'), 700);
         }
 
@@ -179,19 +179,17 @@ document.addEventListener('DOMContentLoaded', () => {
         loadImageToCanvas(file, encodeCanvas, data => {
             encodeImageData = data;
             encodeMaxBytes  = Math.floor(data.data.length / 8) - 11;
-            encodeDropzone.classList.add('hidden');
-            encodePreview.classList.remove('hidden');
-            encodePreview.classList.add('flex');
+            encodeDropzone.style.display  = 'none';
+            encodePreview.style.display   = 'flex';
             updateCapacity();
         });
     });
 
     document.getElementById('encode-remove-btn')?.addEventListener('click', () => {
         encodeImageData = null; encodeMaxBytes = 0; encodeFileData = null;
-        encodePreview.classList.add('hidden');
-        encodePreview.classList.remove('flex');
-        encodeDropzone.classList.remove('hidden');
-        document.getElementById('encode-result')?.classList.add('hidden');
+        encodePreview.style.display  = 'none';
+        encodeDropzone.style.display = 'flex';
+        document.getElementById('encode-result').style.display = 'none';
         updateCapacity();
     });
 
@@ -255,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
             rc.height = resultData.height;
             rc.getContext('2d').putImageData(resultData, 0, 0);
 
-            document.getElementById('encode-result').classList.remove('hidden');
+            document.getElementById('encode-result').style.display = 'flex';
             logActivity('Hide Data', metadata.type === 'file' ? metadata.name : 'Text Message', 'success');
             refreshStats();
         } catch(err) {
@@ -268,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('close-result-btn')?.addEventListener('click', () => {
-        document.getElementById('encode-result').classList.add('hidden');
+        document.getElementById('encode-result').style.display = 'none';
     });
 
     document.getElementById('download-btn')?.addEventListener('click', () => {
@@ -287,16 +285,16 @@ document.addEventListener('DOMContentLoaded', () => {
     makeDropzone(decodeDropzone, file => {
         loadImageToCanvas(file, decodeCanvas, data => {
             decodeImageData = data;
-            decodeDropzone.classList.add('hidden');
-            decodePreview.classList.remove('hidden');
+            decodeDropzone.style.display = 'none';
+            decodePreview.style.display  = 'flex';
         });
     });
 
     document.getElementById('decode-remove-btn')?.addEventListener('click', () => {
         decodeImageData = null;
-        decodePreview.classList.add('hidden');
-        decodeDropzone.classList.remove('hidden');
-        document.getElementById('decode-result')?.classList.add('hidden');
+        decodePreview.style.display  = 'none';
+        decodeDropzone.style.display = 'flex';
+        document.getElementById('decode-result').style.display = 'none';
     });
 
     document.getElementById('decode-btn')?.addEventListener('click', async () => {
@@ -334,8 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 logActivity('Extract Data', result.name, 'success');
             }
 
-            document.getElementById('decode-result').classList.remove('hidden');
-            document.getElementById('decode-result').classList.add('flex');
+            document.getElementById('decode-result').style.display = 'flex';
             
             refreshStats();
         } catch(err) {
