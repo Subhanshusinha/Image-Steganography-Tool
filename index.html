@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StealthGuard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="text-slate-800 flex flex-col h-screen w-screen overflow-hidden bg-slate-50">
+
+    <!-- Ambient Animated Background -->
+    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-400/20 blur-[100px] animate-blob"></div>
+        <div class="absolute top-[20%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-400/20 blur-[100px] animate-blob animation-delay-2000"></div>
+        <div class="absolute bottom-[-20%] left-[20%] w-[40%] h-[40%] rounded-full bg-pink-400/20 blur-[100px] animate-blob animation-delay-4000"></div>
+    </div>
+
+    <!-- ═══ TOP NAVIGATION ═══ -->
+    <header class="glass-panel border-b border-white/40 flex-none z-10 h-16 flex items-center justify-between px-6 shadow-sm shadow-indigo-100/50">
+        <div class="flex items-center gap-8 h-full">
+            <button id="logo-btn" class="flex items-center gap-3 hover:scale-105 transition-transform">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-purple-500/30">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2.5" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <span class="font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-900 to-purple-800 text-lg tracking-tight">StealthGuard</span>
+            </button>
+            <nav class="flex items-center gap-2 h-full border-l border-indigo-100 pl-4 overflow-x-auto hide-scrollbar whitespace-nowrap">
+                <button data-section="dashboard" class="sidebar-nav-btn nav-link active flex-none">Dashboard</button>
+                <button data-section="encode" class="sidebar-nav-btn nav-link flex-none">Hide Data</button>
+                <button data-section="decode" class="sidebar-nav-btn nav-link flex-none">Extract Data</button>
+                <button data-section="analysis" class="sidebar-nav-btn nav-link flex-none">Analysis</button>
+                <button data-section="guide" class="sidebar-nav-btn nav-link flex-none">How to Use</button>
+            </nav>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200/60 shadow-sm shadow-emerald-100">
+                <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse"></div>
+                100% Local
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══ MAIN CONTENT AREA (NO SCROLL) ═══ -->
+    <main class="flex-1 relative z-10 w-full max-w-7xl mx-auto flex flex-col min-h-0">
+        
+        <!-- ══════════════ DASHBOARD ══════════════ -->
+        <div id="dashboard-section" class="w-full h-full p-6 flex flex-col gap-6 fade-in-up">
+            
+            <!-- Top Hero / Stats Row -->
+            <div class="flex-none grid grid-cols-1 md:grid-cols-4 gap-6 h-[180px]">
+                
+                <!-- Welcome Banner -->
+                <div class="md:col-span-2 glass-card p-6 flex flex-col justify-center relative overflow-hidden group">
+                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                    <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-2">Secure Steganography.</h1>
+                    <p class="text-sm font-medium text-slate-500 max-w-sm leading-relaxed mb-5">Embed data directly inside images with AES-256 encryption. Zero servers. Total privacy.</p>
+                    <div class="flex gap-3 relative z-10">
+                        <button data-action="encode" class="action-hero-btn primary-btn px-6 py-2.5 text-sm flex items-center gap-2">
+                            Hide Data Now
+                        </button>
+                        <button data-action="analysis" class="action-hero-btn secondary-btn px-6 py-2.5 text-sm flex items-center gap-2">
+                            Compare Images
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="glass-card p-5 flex flex-col justify-center items-center text-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-b from-blue-50 to-transparent opacity-50"></div>
+                    <p class="text-[11px] font-black text-blue-500 uppercase tracking-widest mb-1 relative z-10">Encoded</p>
+                    <p id="stat-encryptions" class="text-5xl font-black text-slate-800 relative z-10 tracking-tighter">0</p>
+                </div>
+                <div class="glass-card p-5 flex flex-col justify-center items-center text-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-b from-purple-50 to-transparent opacity-50"></div>
+                    <p class="text-[11px] font-black text-purple-500 uppercase tracking-widest mb-1 relative z-10">Decoded</p>
+                    <p id="stat-decryptions" class="text-5xl font-black text-slate-800 relative z-10 tracking-tighter">0</p>
+                </div>
+            </div>
+
+            <!-- Bottom Actions & Log Row -->
+            <div class="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-6 pb-4">
+                
+                <!-- Action Cards -->
+                <div class="flex flex-col gap-4 justify-between h-full">
+                    <button data-action="encode" class="action-hero-btn glass-card flex-1 p-5 text-left flex flex-col justify-center hover:border-indigo-300 group transition-all">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 group-hover:bg-indigo-600 group-hover:text-white group-hover:scale-110 transition-all shadow-sm">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                        </div>
+                        <h3 class="font-extrabold text-slate-800 text-base mb-1 group-hover:text-indigo-700">Hide Secret Data</h3>
+                        <p class="text-xs font-medium text-slate-500 leading-relaxed">Embed files or text into PNGs.</p>
+                    </button>
+                    <button data-action="decode" class="action-hero-btn glass-card flex-1 p-5 text-left flex flex-col justify-center hover:border-purple-300 group transition-all">
+                        <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-3 group-hover:bg-purple-600 group-hover:text-white group-hover:scale-110 transition-all shadow-sm">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        </div>
+                        <h3 class="font-extrabold text-slate-800 text-base mb-1 group-hover:text-purple-700">Extract Secrets</h3>
+                        <p class="text-xs font-medium text-slate-500 leading-relaxed">Recover payloads from images.</p>
+                    </button>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="md:col-span-2 glass-card p-0 flex flex-col h-full overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100/60 bg-white/40 flex justify-between items-center flex-none">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Recent Operations
+                        </h3>
+                        <span id="stat-bytes" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">0 B Processed</span>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-2">
+                        <table class="w-full text-sm text-left border-separate" style="border-spacing: 0 4px;">
+                            <tbody id="activity-log">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-12 text-center text-slate-400 text-sm font-medium">No operations yet. Start by hiding data!</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ══════════════ ENCODE SECTION ══════════════ -->
+        <div id="encode-section" class="hidden w-full h-full p-6 flex flex-col items-center justify-center fade-in-up">
+            <div class="w-full max-w-5xl flex flex-col h-full max-h-[800px]">
+                <div class="flex-none mb-6 text-center">
+                    <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Hide Data inside Image</h2>
+                    <p class="text-slate-500 font-medium mt-2">Embed a secret payload invisibly into an image file using AES-256 encryption.</p>
+                </div>
+                
+                <div class="flex-1 min-h-0 glass-card p-6 flex flex-col lg:flex-row gap-8 shadow-xl border-indigo-100/50">
+                    <!-- Image Side -->
+                    <div class="flex-1 flex flex-col min-w-0">
+                        <label class="text-sm font-bold text-slate-700 mb-3 block">Cover Image</label>
+                        
+                        <div id="encode-dropzone" class="flex-1 rounded-xl border-2 border-dashed border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50/50 bg-white/40 transition-all flex flex-col items-center justify-center cursor-pointer group">
+                            <div class="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all text-indigo-500 shadow-sm">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            </div>
+                            <p class="text-sm font-bold text-slate-800">Drag & Drop PNG</p>
+                            <p class="text-xs text-slate-500 mt-1">or click to browse</p>
+                        </div>
+                        
+                        <div id="encode-preview" class="hidden flex-1 flex flex-col gap-4 min-h-0">
+                            <div class="flex-1 rounded-xl overflow-hidden bg-slate-50/50 border border-slate-200 relative min-h-0 flex items-center justify-center p-3 shadow-inner">
+                                <canvas id="encode-canvas" class="max-w-full max-h-full object-contain rounded shadow-sm"></canvas>
+                                <button id="encode-remove-btn" class="absolute top-3 right-3 bg-white/90 backdrop-blur shadow text-rose-600 font-bold px-3 py-1.5 rounded-lg text-xs hover:bg-rose-50 transition-colors border border-rose-100">✕ Remove</button>
+                            </div>
+                            <div class="flex-none bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+                                <div class="flex justify-between text-[11px] font-bold mb-2 uppercase tracking-wide">
+                                    <span class="text-slate-400">Capacity Used</span>
+                                    <span id="capacity-label" class="text-indigo-600">0 / 0 B</span>
+                                </div>
+                                <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                                    <div id="capacity-bar" class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-300" style="width:0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="hidden lg:block w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent"></div>
+
+                    <!-- Controls Side -->
+                    <div class="flex-1 flex flex-col min-w-0">
+                        <div class="flex-1 flex flex-col gap-6">
+                            <div class="flex items-center justify-between">
+                                <label class="text-sm font-bold text-slate-700">Secret Payload</label>
+                                <div class="flex bg-slate-100/80 p-1 rounded-lg border border-slate-200">
+                                    <button id="type-text-btn" class="px-4 py-1.5 text-xs font-bold rounded-md bg-white shadow-sm text-indigo-700 transition-all">Text</button>
+                                    <button id="type-file-btn" class="px-4 py-1.5 text-xs font-bold rounded-md text-slate-500 hover:text-slate-800 transition-all">File</button>
+                                </div>
+                            </div>
+                            <div id="text-payload-container" class="flex-1 min-h-[160px] flex">
+                                <textarea id="secret-message" placeholder="Type your secret message here..." class="w-full h-full px-5 py-4 bg-white/60 backdrop-blur border border-indigo-100 rounded-xl text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 shadow-inner resize-none font-medium transition-all"></textarea>
+                            </div>
+                            <div id="file-payload-container" class="hidden flex-1 min-h-[160px]">
+                                <label class="block w-full h-full cursor-pointer">
+                                    <input type="file" id="secret-file" class="hidden">
+                                    <div class="w-full h-full border-dashed border-2 border-indigo-200 hover:border-indigo-400 rounded-xl bg-white/50 text-center flex flex-col items-center justify-center transition-all">
+                                        <div class="w-12 h-12 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center mb-3">
+                                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                        </div>
+                                        <span id="file-chosen-name" class="font-bold text-sm text-slate-700">Select file to hide</span>
+                                        <span class="text-xs text-slate-400 mt-1">Any file format supported</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">AES-256 Password <span class="text-slate-400 font-medium">(Optional)</span></label>
+                                <input id="encode-password" type="password" placeholder="Set an encryption key..." class="w-full px-5 py-4 bg-white/60 backdrop-blur border border-indigo-100 rounded-xl text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 shadow-inner font-medium transition-all">
+                            </div>
+                        </div>
+                        <button id="encode-btn" class="primary-btn w-full py-4 mt-6 flex justify-center items-center gap-2 text-base font-black tracking-wide shadow-indigo-500/30">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            Encrypt & Embed Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Elegant Modal for Success Result -->
+            <div id="encode-result" class="hidden absolute inset-0 z-50 flex items-center justify-center p-4 fade-in-up">
+                <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm rounded-xl"></div>
+                <div class="relative z-10 glass-card p-8 flex flex-col items-center text-center w-full max-w-md shadow-2xl border-emerald-200/50 bg-white/95 rounded-2xl mx-auto">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-white flex items-center justify-center mb-5 shadow-lg shadow-emerald-500/30">
+                        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <h3 class="text-2xl font-black text-slate-800 mb-2">Success!</h3>
+                    <p class="text-slate-500 text-sm font-medium mb-6">Your data is secured invisibly inside the image below.</p>
+                    <div class="bg-slate-50 p-2 rounded-xl w-full mb-6 border border-slate-200 shadow-inner">
+                        <canvas id="encode-result-canvas" class="w-full h-32 object-contain rounded-lg"></canvas>
+                    </div>
+                    <div class="flex gap-3 w-full">
+                        <button id="close-result-btn" class="secondary-btn flex-1 py-3 text-sm">Close</button>
+                        <button id="download-btn" class="primary-btn flex-1 py-3 text-sm bg-gradient-to-r from-emerald-500 to-teal-600 shadow-emerald-500/25">
+                            Download Image
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════ DECODE SECTION ══════════════ -->
+        <div id="decode-section" class="hidden w-full h-full p-6 flex flex-col items-center justify-center fade-in-up">
+            <div class="w-full max-w-5xl flex flex-col h-full max-h-[800px]">
+                <div class="flex-none mb-6 text-center">
+                    <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">Extract Data</h2>
+                    <p class="text-slate-500 font-medium mt-2">Recover hidden payloads from a StealthGuard-secured image.</p>
+                </div>
+                
+                <div class="flex-1 min-h-0 glass-card p-6 flex flex-col lg:flex-row gap-8 shadow-xl border-purple-100/50">
+                    <!-- Image Side -->
+                    <div class="flex-1 flex flex-col min-w-0">
+                        <label class="text-sm font-bold text-slate-700 mb-3 block">Secured Image</label>
+                        <div id="decode-dropzone" class="flex-1 rounded-xl border-2 border-dashed border-purple-200 hover:border-purple-400 hover:bg-purple-50/50 bg-white/40 transition-all flex flex-col items-center justify-center cursor-pointer group">
+                            <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all text-purple-500 shadow-sm">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                            </div>
+                            <p class="text-sm font-bold text-slate-800">Upload Secured PNG</p>
+                            <p class="text-xs text-slate-500 mt-1">Drag and drop or click here</p>
+                        </div>
+                        <div id="decode-preview" class="hidden flex-1 flex flex-col min-h-0">
+                            <div class="flex-1 rounded-xl overflow-hidden bg-slate-50/50 border border-slate-200 relative min-h-0 flex items-center justify-center p-3 shadow-inner">
+                                <canvas id="decode-canvas" class="max-w-full max-h-full object-contain rounded shadow-sm"></canvas>
+                                <button id="decode-remove-btn" class="absolute top-3 right-3 bg-white/90 backdrop-blur shadow text-rose-600 font-bold px-3 py-1.5 rounded-lg text-xs hover:bg-rose-50 transition-colors border border-rose-100">✕ Remove</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="hidden lg:block w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent"></div>
+
+                    <!-- Controls Side -->
+                    <div class="flex-1 flex flex-col min-w-0">
+                        <div class="flex-none mb-6">
+                            <label class="block text-sm font-bold text-slate-700 mb-3">Decryption Password <span class="text-slate-400 font-medium">(Optional)</span></label>
+                            <input id="decode-password" type="password" placeholder="Enter password to decrypt..." class="w-full px-5 py-4 bg-white/60 backdrop-blur border border-purple-100 rounded-xl text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200 shadow-inner font-medium transition-all">
+                        </div>
+                        
+                        <button id="decode-btn" class="primary-btn bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-purple-500/25 w-full py-4 flex justify-center items-center gap-2 text-base font-black tracking-wide flex-none mb-6">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
+                            Extract Hidden Payload
+                        </button>
+
+                        <div id="decode-result" class="hidden flex-1 flex-col gap-4 min-h-0 bg-slate-50/50 p-4 rounded-xl border border-slate-200 shadow-inner fade-in-up">
+                            <div class="flex items-center justify-between flex-none">
+                                <div class="flex items-center gap-2 text-sm font-black text-emerald-600 uppercase tracking-wide">
+                                    <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                    </div>
+                                    Payload Recovered
+                                </div>
+                            </div>
+                            <div class="flex-1 rounded-xl bg-white/90 border border-slate-200 shadow-sm p-4 overflow-y-auto font-mono text-sm text-slate-700 min-h-0">
+                                <pre id="extracted-message" class="whitespace-pre-wrap"></pre>
+                            </div>
+                            <button id="copy-or-download-btn" class="secondary-btn w-full py-3 text-sm font-bold flex-none shadow-sm">Take Action</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════ ANALYSIS & SECURITY (Truncated for space, simplified to fit 100vh) ══════════════ -->
+        <!-- ══════════════ ANALYSIS SECTION ══════════════ -->
+        <div id="analysis-section" class="hidden w-full h-full p-6 flex flex-col items-center justify-center fade-in-up">
+            <div class="w-full max-w-5xl flex flex-col h-full max-h-[800px]">
+                <div class="flex-none mb-6 text-center">
+                    <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-orange-500">Pixel Diff Analysis</h2>
+                    <p class="text-slate-500 font-medium mt-2">Visualize exact pixel modifications between original and stego images.</p>
+                </div>
+                
+                <div class="flex-1 min-h-0 glass-card p-6 flex flex-col gap-6 shadow-xl border-rose-100/50">
+                    <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8 min-h-0">
+                        <!-- Original Image -->
+                        <div class="flex flex-col h-full bg-slate-50/50 p-5 rounded-2xl border border-slate-200 shadow-inner">
+                            <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-slate-200 flex items-center justify-center text-slate-500 font-black text-xs">1</span>
+                                Original Image
+                            </label>
+                            <input type="file" id="diff-orig-file" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:font-bold file:bg-white file:text-slate-700 file:shadow-sm hover:file:bg-slate-50 mb-4 flex-none cursor-pointer">
+                            <div class="flex-1 bg-white/80 rounded-xl border border-slate-200 flex items-center justify-center overflow-hidden min-h-0 relative shadow-sm">
+                                <canvas id="diff-orig-canvas" class="hidden max-h-full max-w-full object-contain p-2"></canvas>
+                                <span id="diff-orig-placeholder" class="text-sm font-bold text-slate-400">Not selected</span>
+                            </div>
+                        </div>
+
+                        <!-- Encoded Image -->
+                        <div class="flex flex-col h-full bg-rose-50/30 p-5 rounded-2xl border border-rose-100/50 shadow-inner">
+                            <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-rose-100 flex items-center justify-center text-rose-500 font-black text-xs">2</span>
+                                Encoded Image
+                            </label>
+                            <input type="file" id="diff-enc-file" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:font-bold file:bg-white file:text-rose-700 file:shadow-sm hover:file:bg-rose-50 mb-4 flex-none cursor-pointer">
+                            <div class="flex-1 bg-white/80 rounded-xl border border-rose-100 flex items-center justify-center overflow-hidden min-h-0 relative shadow-sm">
+                                <canvas id="diff-enc-canvas" class="hidden max-h-full max-w-full object-contain p-2"></canvas>
+                                <span id="diff-enc-placeholder" class="text-sm font-bold text-rose-400/70">Not selected</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="run-diff-btn" class="primary-btn bg-gradient-to-r from-rose-500 to-orange-500 flex-none py-4 text-base font-black tracking-wide shadow-rose-500/30 hover:shadow-rose-500/40">
+                        Run Visual Comparison
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal for Diff Result -->
+            <div id="diff-result" class="hidden absolute inset-0 z-50 flex items-center justify-center p-4 fade-in-up">
+                <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm rounded-xl"></div>
+                <div class="relative z-10 glass-card p-6 flex flex-col w-full max-w-5xl h-[85vh] shadow-2xl bg-white/95 border-rose-200/50 rounded-2xl">
+                    <div class="flex justify-between items-center mb-4 flex-none">
+                        <div class="flex items-center gap-4">
+                            <h3 class="font-black text-2xl text-slate-800">Diff Map</h3>
+                            <span class="text-rose-500 font-bold bg-rose-50 px-3 py-1 rounded-lg text-sm border border-rose-100" id="diff-count-label"></span>
+                        </div>
+                        <button onclick="document.getElementById('diff-result').classList.add('hidden')" class="secondary-btn px-4 py-2 text-sm font-bold">✕ Close Map</button>
+                    </div>
+                    <div class="flex-1 min-h-0 flex items-center justify-center border border-slate-200 rounded-xl bg-slate-900 overflow-hidden shadow-inner p-2">
+                        <canvas id="diff-canvas" class="max-w-full max-h-full object-contain rounded-lg"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="security-section" class="hidden w-full h-full p-6 flex flex-col items-center justify-center gap-6 fade-in-up">
+            <h2 class="text-3xl font-black text-slate-800 text-center">AES-256 + LSB Steganography</h2>
+            <p class="font-medium text-slate-500 text-center max-w-md">All data stays in your browser. Encrypted via Web Crypto API, distributed via Fisher-Yates PRNG.</p>
+        </div>
+
+        <!-- ══════════════ GUIDE SECTION ══════════════ -->
+        <div id="guide-section" class="hidden w-full h-full p-6 flex flex-col items-center justify-center fade-in-up">
+            <div class="w-full max-w-4xl flex flex-col h-full max-h-[800px]">
+                <div class="flex-none mb-6 text-center">
+                    <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-emerald-500">How to Use StealthGuard</h2>
+                    <p class="text-slate-500 font-medium mt-2">A quick guide to hiding and extracting files securely.</p>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto glass-card p-8 flex flex-col gap-8 shadow-xl border-emerald-100/50">
+                    
+                    <!-- Step 1 -->
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-none w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 font-black text-xl flex items-center justify-center shadow-inner">1</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800 mb-2">Hide Data in an Image</h3>
+                            <p class="text-slate-600 leading-relaxed text-sm mb-3">Go to the <strong>Hide Data</strong> tab. Drag and drop any normal PNG image into the Cover Image box. This image will be the carrier.</p>
+                            <p class="text-slate-600 leading-relaxed text-sm">Next, type a secret message or upload a file (like a PDF or ZIP). Optionally, enter a strong password. Click <strong>Encrypt & Embed</strong> to generate your new, secured PNG image.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-none w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 font-black text-xl flex items-center justify-center shadow-inner">2</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800 mb-2">Share the Image</h3>
+                            <p class="text-slate-600 leading-relaxed text-sm">The downloaded image looks completely identical to the original to the human eye. You can send this PNG image to anyone via email, USB, or uncompressed messaging apps (ensure the app doesn't re-compress images like WhatsApp does, or send it as a document).</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-none w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 font-black text-xl flex items-center justify-center shadow-inner">3</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800 mb-2">Extract the Secret</h3>
+                            <p class="text-slate-600 leading-relaxed text-sm">To recover the hidden data, the recipient must open StealthGuard and go to the <strong>Extract Data</strong> tab. They simply drop the secured PNG image into the box, enter the password (if you set one), and click <strong>Extract Payload</strong>.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-5 rounded-xl bg-amber-50 border border-amber-200">
+                        <h4 class="font-bold text-amber-800 flex items-center gap-2 mb-2">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            Important Warning
+                        </h4>
+                        <p class="text-sm text-amber-700 leading-relaxed">Steganography relies on exact pixel values. If the image is resized, compressed, filtered, or converted to JPEG by a social media site, the hidden data will be <strong>permanently destroyed</strong>. Always share the image via lossless methods (Email as attachment, ZIP, Slack, Discord, Google Drive, etc).</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="src/core/prng.js"></script>
+    <script src="src/core/crypto.js"></script>
+    <script src="src/core/steganography.js"></script>
+    <script src="src/app.js"></script>
+</body>
+</html>
