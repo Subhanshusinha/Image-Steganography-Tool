@@ -401,6 +401,16 @@ document.addEventListener('DOMContentLoaded', () => {
         logActivity('Diff Analysis', `${changed} pixels changed`, 'success');
     });
 
+    // ── Real-Time Clock ───────────────────────────────
+    function updateClock() {
+        const clockEl = document.getElementById('real-time-clock');
+        if (clockEl) {
+            clockEl.textContent = new Date().toLocaleTimeString();
+        }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
     // ── Initial state ─────────────────────────────────
     showSection('dashboard');
 });
